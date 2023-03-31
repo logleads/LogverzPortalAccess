@@ -1,0 +1,27 @@
+{
+  "advertisement": {
+    "GoogleAuth": {
+      "title": "Log In with your social identity",
+      "btnText": "Continue with Google",
+      "bodyText": "To able to use the system administrator needs to provide you access",
+      "url": "https://8d018470-ec39-11eb-be00-0a599f9f72fc.auth.ap-southeast-2.amazoncognito.com/oauth2/authorize?identity_provider=Google&redirect_uri=https://demo.logleads.com/Auth&response_type=CODE&client_id=30n58m6ttuuj86gn028kv0smea&scope=email openid profile",
+      "sideBarIcon": "<img src='/HTTP/S3/LB/public/images/Google.png' alt='user-icon' width='50' height='50' />",
+      "loginButtonIcon": "<img src='/HTTP/S3/LB/public/images/Google.png' alt='user-icon' width='50' height='50' />",
+      "advertisementHTML": "<ins data-revive-zoneid=\"3\" data-revive-id=\"2f546c30ad8d4b80838351c12a4786b1\"></ins>",
+      "advertisementId": "2f546c30ad8d4b80838351c12a4786b1"
+    },
+    "OktaAuth": {
+      "title": "Log In with your social identity",
+      "btnText": "Continue with Okta",
+      "bodyText": "To able to use the system administrator needs to provide you access",
+      "url": "https://8d018470-ec39-11eb-be00-0a599f9f72fc.auth.ap-southeast-2.amazoncognito.com/oauth2/authorize?identity_provider=Okta&redirect_uri=https://demo.logleads.com/Auth&response_type=CODE&client_id=30n58m6ttuuj86gn028kv0smea&scope=email openid profile",
+      "sideBarIcon": "<img src='/HTTP/S3/LB/public/images/Okta.png' alt='user-icon' width='50' height='50' />",
+      "loginButtonIcon": "<img src='/HTTP/S3/LB/public/images/Okta.png' alt='user-icon' width='50' height='50' />",
+      "advertisementHTML": "<ins data-revive-zoneid=\"3\" data-revive-id=\"2f546c30ad8d4b80838351c12a4786b1\"></ins>",
+      "advertisementId": "2f546c30ad8d4b80838351c12a4786b1"
+    }
+  },
+  "AdvertisementAWS": "<ins data-revive-zoneid=\"3\" data-revive-id=\"2f546c30ad8d4b80838351c12a4786b1\"></ins>",
+  "AdvertisementIdAWS": "2f546c30ad8d4b80838351c12a4786b1",
+  "sideBarIcon": "<img src='/HTTP/S3/LB/public/images/Aws.png' alt='user-icon' width='50' height='50' />"
+}
