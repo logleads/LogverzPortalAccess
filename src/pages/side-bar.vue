@@ -5,52 +5,49 @@
       :class="[$style['sidebar__item'], iconSelected === 'aws' && $style['sidebar__item--active']]"
       @click="() => selectAdvertisement('aws')"
     >
-      <p v-html="sideBarIcon"></p>
+      <div v-html="sideBarIcon()"></div>
     </button>
     <button
-      v-for="(item, key) in advertisement"
+      v-for="(item, key) in advertisement()"
       :key="key"
       type="button"
       :class="[$style['sidebar__item'], iconSelected === key && $style['sidebar__item--active']]"
       @click="() => selectAdvertisement(key)"
     >
-      <p v-html="item.sideBarIcon"></p>
+      <div v-html="item.sideBarIcon"></div>
     </button>
   </aside>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import { Component, Emit } from 'vue-property-decorator';
-
-import DropDownSimple from '~/components/shared/drop-down-simple.vue';
-import Header from '~/components/shared/header.vue';
-import Icon from '~/components/shared/icon.vue';
-import Input from '~/components/shared/input.vue';
-import InputContainer from '~/components/shared/input-container.vue';
 import config from '~/config.json';
+import { defineComponent, ref } from 'vue';
 
-@Component({
+export default defineComponent({
   name: 'SideBar',
-  components: { Input, Header, Icon, InputContainer, DropDownSimple },
-})
-export default class SideBar extends Vue {
-  public iconSelected: string = 'aws';
+  setup(props, { emit }) {
+    const iconSelected = ref('aws');
 
-  get advertisement(): Record<string, any> {
-    return config.advertisement;
-  }
+    function advertisement() {
+      return config.advertisement;
+    }
 
-  get sideBarIcon(): string {
-    return config.sideBarIcon;
-  }
+    function sideBarIcon() {
+      return config.sideBarIcon;
+    }
 
-  @Emit('select-advertisement')
-  selectAdvertisement(id: string): string {
-    this.iconSelected = id;
-    return id;
-  }
-}
+    function selectAdvertisement(id: string) {
+      iconSelected.value = id;
+      emit('select-advertisement', id);
+    }
+    return {
+      selectAdvertisement,
+      sideBarIcon,
+      advertisement,
+      iconSelected,
+    };
+  },
+});
 </script>
 
 <style module lang="scss">

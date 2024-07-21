@@ -33,17 +33,14 @@
         label="Account Number"
         :class="$style['input-container']"
       >
-        <template slot="input">
+        <template v-slot:input>
           <Input
             v-model="accountNumber"
             name="accountNumber"
-            :error="!$v.accountNumber.required && submitted"
-            :disabled="isFetching"
+            :error="v$.accountNumber.$error && submitted"
+            :disabled="isFetching()"
           />
-          <div
-            v-if="submitted && !$v.accountNumber.required"
-            :class="$style['sign-in__errorMessage']"
-          >
+          <div v-if="submitted && v$.accountNumber.$error" :class="$style['sign-in__errorMessage']">
             Acccount Number is required
           </div>
         </template>
@@ -52,25 +49,27 @@
         :label="isUserSelected ? 'User Name' : 'Access Key ID'"
         :class="$style['input-container']"
       >
-        <template slot="input">
+        <template v-slot:input>
           <template v-if="isUserSelected">
             <Input
               v-model="userName"
-              :error="!$v.userName.required && submitted"
-              :disabled="isFetching"
+              :error="v$.userName.$error && submitted"
+              :disabled="isFetching()"
+              name="userName"
             />
-            <div v-if="!$v.userName.required && submitted" :class="$style['sign-in__errorMessage']">
+            <div v-if="v$.userName.$error && submitted" :class="$style['sign-in__errorMessage']">
               User Name is required
             </div>
           </template>
           <template v-else>
             <Input
               v-model="accessKeyID"
-              :error="!$v.accessKeyID.required && submitted && isUserSelected"
-              :disabled="isFetching"
+              :error="v$.accessKeyID.$error && submitted && !isUserSelected"
+              :disabled="isFetching()"
+              name="accessKeyID"
             />
             <div
-              v-if="submitted && !$v.accessKeyID.required && isUserSelected"
+              v-if="submitted && v$.accessKeyID.$error && !isUserSelected"
               :class="$style['sign-in__errorMessage']"
             >
               Access Key ID is required
@@ -82,16 +81,17 @@
         :label="isUserSelected ? 'Password' : 'Secret Access Key'"
         :class="$style['input-container']"
       >
-        <template slot="input">
+        <template v-slot:input>
           <template v-if="isUserSelected">
             <Input
               v-model="password"
               type="password"
-              :error="!$v.password.required && submitted && isUserSelected"
-              :disabled="isFetching"
+              :error="v$.password.$error && submitted && isUserSelected"
+              :disabled="isFetching()"
+              name="password"
             />
             <div
-              v-if="submitted && !$v.password.required && isUserSelected"
+              v-if="submitted && v$.password.$error && isUserSelected"
               :class="$style['sign-in__errorMessage']"
             >
               Password is required
@@ -101,14 +101,14 @@
             <Input
               v-model="secretAccessKey"
               type="password"
-              :error="secretAccessKey && isUserSelected"
-              :disabled="isFetching"
+              :error="v$.secretAccessKey.$error && submitted && !isUserSelected"
+              :disabled="isFetching()"
             />
             <div
-              v-if="submitted && !$v.secretAccessKey.required && isUserSelected"
+              v-if="submitted && v$.secretAccessKey.$error && !isUserSelected"
               :class="$style['sign-in__errorMessage']"
             >
-              Password is required
+              secret access Key is required
             </div>
           </template>
         </template>
@@ -122,207 +122,241 @@
         </button>
         <div v-if="mfaExpanded" :class="$style['mfa__form']">
           <input-container v-if="isUserSelected" label="MFAType" :class="$style['input-container']">
-            <DropDownSimple
-              slot="input"
-              :content="mfaType"
-              :items="mfaTypes"
-              name="mfaType"
-              @select-value="e => handleDropDownSimple(e)"
-            />
+            <template v-slot:input>
+              <DropDownSimple
+                :content="mfaType"
+                :items="mfaTypes"
+                name="mfaType"
+                @select-value="e => handleDropDownSimple(e)"
+              />
+            </template>
           </input-container>
           <input-container v-else label="Serial number" :class="$style['input-container']">
-            <Input slot="input" v-model="serialnumber" :disabled="isFetching" />
+            <template v-slot:input>
+              <Input v-model="serialnumber" :disabled="isFetching()" />
+            </template>
           </input-container>
           <input-container label="Code" :class="$style['input-container']">
-            <Input slot="input" v-model="code" :disabled="isFetching" />
+            <template v-slot:input>
+              <Input v-model="code" :disabled="isFetching()" />
+            </template>
           </input-container>
         </div>
       </div>
       <ButtonComponent
         text="Log in"
-        :disabled="isFetching && disableLogin"
-        :display-loader="isFetching"
+        :disabled="isFetching() && disableLogin"
+        :display-loader="isFetching()"
         :cookiedisabled="disableLogin"
         :class="$style['sign-in__submit-btn']"
         :callback="handleSubmit"
       />
     </div>
     <div :class="$style['sign-in__ad']">
-      <span v-html="advertisementAWS"></span>
+      <span v-html="advertisementAWS()"></span>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import { Component, Prop, Watch } from 'vue-property-decorator';
-import { validationMixin } from 'vuelidate';
-import { required } from 'vuelidate/lib/validators';
+import { useVuelidate } from '@vuelidate/core';
+import { required } from '@vuelidate/validators';
 
 import ButtonComponent from '~/components/shared/button-component.vue';
 import DropDownSimple from '~/components/shared/drop-down-simple.vue';
-import Header from '~/components/shared/header.vue';
 import Icon from '~/components/shared/icon.vue';
 import Input from '~/components/shared/input.vue';
 import InputContainer from '~/components/shared/input-container.vue';
 import config from '~/config.json';
-import SideBar from '~/pages/side-bar.vue';
-import Tab from '~/pages/tab.vue';
 import { AuthModule } from '~/store/modules/auth';
 const valueForDropDown: { [key: string]: string } = {
   software: 'SW',
 };
 
-@Component({
+import { defineComponent, watch, ref, onMounted } from 'vue';
+
+export default defineComponent({
   name: 'TabAWS',
   components: {
     Input,
-    Header,
     Icon,
     ButtonComponent,
     InputContainer,
     DropDownSimple,
-    SideBar,
-    Tab,
   },
-  mixins: [validationMixin],
-  validations: {
-    accountNumber: { required },
-    userName: { required },
-    password: { required },
-    secretAccessKey: { required },
-    accessKeyID: { required },
+  props: {
+    disableLogin: {
+      type: Boolean,
+      required: true,
+    },
   },
-})
-export default class TabAWS extends Vue {
-  @Prop({ required: true, type: Boolean }) readonly disableLogin!: boolean;
-  public mfaExpanded = false;
-  public accountNumber = '';
-  public userName = '';
-  public password = '';
-  public mfaType: string = 'software';
-  public mfaTypes = ['software'];
-  public code = '';
-  public isUserSelected = true;
-  public submitted = false;
-  public iconSelected = 'aws';
-  public accessKeyID = '';
-  public secretAccessKey = '';
-  public serialnumber = '';
-  public disableTabbutton = false;
-
-  @Watch('disableLogin')
-  handleloginDisable(): void {
-    this.disableTabbutton = this.disableLogin;
-    // eslint-disable-next-line no-console
-    console.log('disableTabbutton ', this.disableTabbutton, 'isFetching', this.isFetching);
-  }
-
-  get isFetching(): boolean {
-    return AuthModule.isFetching;
-  }
-
-  get advertisementAWS(): string {
-    return config.AdvertisementAWS;
-  }
-
-  mounted(): void {
-    // eslint-disable-next-line no-console
-    // console.log(config.AdvertisementIdAWS, 'advertisementIdAWS');
-    const advertisementIdAWS: string = config.AdvertisementIdAWS; // config.AdvertisementIdAWS as string;
-
-    let a: any = window,
-      g;
-    let l: any = {
-      zones: [],
-      prefix:
-        a.reviveAsync[advertisementIdAWS].name + '-' + a.reviveAsync[advertisementIdAWS].id + '-',
+  setup(props) {
+    const mfaExpanded = ref(false);
+    const accountNumber = ref('');
+    const userName = ref('');
+    const password = ref('');
+    const mfaType = ref('software');
+    const mfaTypes = ref(['software']);
+    const code = ref('');
+    const isUserSelected = ref(true);
+    const submitted = ref(false);
+    const iconSelected = ref('aws');
+    const accessKeyID = ref('');
+    const secretAccessKey = ref('');
+    const serialnumber = ref('');
+    const disableTabbutton = ref(false);
+    const rules = {
+      accountNumber: { required },
+      userName: { required },
+      password: { required },
+      secretAccessKey: { required },
+      accessKeyID: { required },
     };
-    const q = new RegExp('^' + a.reviveAsync[advertisementIdAWS].getDataAttr('(.*)') + '$');
-    let e = document.querySelectorAll(
-      'ins[' +
-        a.reviveAsync[advertisementIdAWS].getDataAttr('id') +
-        "='" +
-        advertisementIdAWS +
-        "']",
+    const v$ = useVuelidate(rules, {
+      userName,
+      password,
+      accountNumber,
+      secretAccessKey,
+      accessKeyID,
+    });
+    watch(
+      () => props.disableLogin,
+      () => {
+        disableTabbutton.value = props.disableLogin;
+      },
     );
-
-    const n = e[0];
-    n.setAttribute(a.reviveAsync[advertisementIdAWS].getDataAttr('loaded'), '0');
-
-    let s;
-    let k: any = a.reviveAsync[advertisementIdAWS].getDataAttr('seq');
-
-    if (n.hasAttribute(k)) {
-      s = n.getAttribute(k);
-    } else {
-      s = a.reviveAsync[advertisementIdAWS].seq++;
-      n.setAttribute(k, s as any);
-      n.id = l.prefix + s;
+    function isFetching() {
+      return AuthModule.isFetching;
     }
-    for (var h = 0; h < n.attributes.length; h++) {
-      if ((g = n.attributes[h].name.match(q))) {
-        if ('zoneid' === g[1]) {
-          l.zones[s as any] = n.attributes[h].value;
-        } else {
-          if (!/^(id|seq|loaded)$/.test(g[1])) {
-            l[g[1] as any] = n.attributes[h].value;
+
+    function advertisementAWS() {
+      return config.AdvertisementAWS;
+    }
+
+    onMounted(() => {
+      const advertisementIdAWS: string = config.AdvertisementIdAWS; // config.AdvertisementIdAWS as string;
+
+      let a: any = window,
+        g;
+      let l: any = {
+        zones: [],
+        prefix:
+          a.reviveAsync[advertisementIdAWS].name + '-' + a.reviveAsync[advertisementIdAWS].id + '-',
+      };
+      const q = new RegExp('^' + a.reviveAsync[advertisementIdAWS].getDataAttr('(.*)') + '$');
+      let e = document.querySelectorAll(
+        'ins[' +
+          a.reviveAsync[advertisementIdAWS].getDataAttr('id') +
+          "='" +
+          advertisementIdAWS +
+          "']",
+      );
+
+      const n = e[0];
+      n.setAttribute(a.reviveAsync[advertisementIdAWS].getDataAttr('loaded'), '0');
+
+      let s;
+      let k: any = a.reviveAsync[advertisementIdAWS].getDataAttr('seq');
+
+      if (n.hasAttribute(k)) {
+        s = n.getAttribute(k);
+      } else {
+        s = a.reviveAsync[advertisementIdAWS].seq++;
+        n.setAttribute(k, s as any);
+        n.id = l.prefix + s;
+      }
+      for (var h = 0; h < n.attributes.length; h++) {
+        if ((g = n.attributes[h].name.match(q))) {
+          if ('zoneid' === g[1]) {
+            l.zones[s as any] = n.attributes[h].value;
+          } else {
+            if (!/^(id|seq|loaded)$/.test(g[1])) {
+              l[g[1] as any] = n.attributes[h].value;
+            }
           }
         }
       }
+
+      a.reviveAsync[advertisementIdAWS].apply(l);
+    });
+
+    function toggleMfaExpanded(): void {
+      mfaExpanded.value = !mfaExpanded.value;
     }
 
-    a.reviveAsync[advertisementIdAWS].apply(l);
-  }
-
-  private toggleMfaExpanded(): void {
-    this.mfaExpanded = !this.mfaExpanded;
-  }
-
-  private changeLoginType(isUser: boolean) {
-    this.isUserSelected = isUser;
-  }
-
-  public handleSubmit() {
-    // eslint-disable-next-line no-console
-    console.log('coming here...');
-    this.submitted = true;
-    this.$v.$touch();
-    if (
-      (!this.$v.accountNumber.$error && !this.$v.userName.$error && !this.$v.password.$error) ||
-      (!this.$v.secretAccessKey.$error && !this.$v.accessKeyID.$error)
-    ) {
-      this.login();
+    function changeLoginType(isUser: boolean) {
+      v$.value.$reset();
+      isUserSelected.value = isUser;
     }
-  }
 
-  private async login() {
-    const payload = {
-      accountNumber: this.accountNumber,
-      userName: this.userName,
-      password: this.password,
-      tokenSerialNum: valueForDropDown[this.mfaType],
-      code: this.code,
-      serialnumber: this.serialnumber,
-      secretAccessKey: this.secretAccessKey,
-      accessKeyID: this.accessKeyID,
-      isUser: this.isUserSelected,
+    async function handleSubmit() {
+      submitted.value = true;
+      v$.value.$touch();
+      if (
+        (!v$.value.accountNumber.$error &&
+          !v$.value.userName.$error &&
+          !v$.value.password.$error) ||
+        (!v$.value.secretAccessKey.$error && !v$.value.accessKeyID.$error)
+      ) {
+        login();
+      }
+    }
+
+    async function login() {
+      const payload = {
+        accountNumber: accountNumber.value,
+        userName: userName.value,
+        password: password.value,
+        tokenSerialNum: valueForDropDown[mfaType.value],
+        code: code.value,
+        serialnumber: serialnumber.value,
+        secretAccessKey: secretAccessKey.value,
+        accessKeyID: accessKeyID.value,
+        isUser: isUserSelected.value,
+      };
+      await AuthModule.login(payload);
+    }
+
+    function selectGoogleAuth(): void {
+      iconSelected.value = 'google';
+    }
+
+    function selectAwsAuth(): void {
+      iconSelected.value = 'aws';
+    }
+
+    function handleDropDownSimple(e: any): void {
+      mfaType.value = e.item;
+    }
+
+    return {
+      handleDropDownSimple,
+      selectAwsAuth,
+      selectGoogleAuth,
+      mfaExpanded,
+      login,
+      handleSubmit,
+      changeLoginType,
+      toggleMfaExpanded,
+      advertisementAWS,
+      isFetching,
+      accountNumber,
+      userName,
+      password,
+      mfaType,
+      mfaTypes,
+      code,
+      isUserSelected,
+      submitted,
+      iconSelected,
+      accessKeyID,
+      secretAccessKey,
+      serialnumber,
+      disableTabbutton,
+      v$,
     };
-    await AuthModule.login(payload);
-  }
-
-  public selectGoogleAuth(): void {
-    this.iconSelected = 'google';
-  }
-
-  public selectAwsAuth(): void {
-    this.iconSelected = 'aws';
-  }
-
-  public handleDropDownSimple(e: any): void {
-    this.mfaType = e.item;
-  }
-}
+  },
+});
 </script>
 
 <style module lang="scss">

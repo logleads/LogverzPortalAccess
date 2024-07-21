@@ -5,20 +5,20 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropType } from 'vue';
+import { defineComponent } from 'vue';
 
-export default Vue.extend({
+export default defineComponent({
   name: 'Icon',
   props: {
     name: {
       required: true,
-      type: String as PropType<string>,
+      type: String,
     },
     width: {
-      type: Number as PropType<number>,
+      type: Number,
     },
     height: {
-      type: Number as PropType<number>,
+      type: Number,
     },
   },
 });

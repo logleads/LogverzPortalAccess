@@ -40,48 +40,61 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import { Component, Prop, Watch } from 'vue-property-decorator';
-
 import Icon from '~/components/shared/icon.vue';
+import { defineComponent, Ref, ref } from 'vue';
+import { watch } from 'vue';
 
-@Component({
+export default defineComponent({
   name: 'DropDownSimple',
   components: { Icon },
-})
-export default class DropDownSimple extends Vue {
-  @Prop({ required: false, type: Boolean }) readonly expanded!: boolean;
-  @Prop({ required: false, type: String }) readonly content!: string;
-  @Prop({ required: false, type: Array }) readonly items!: Array<string>;
+  props: {
+    expanded: {
+      type: Boolean,
+      required: false,
+    },
+    content: {
+      type: String,
+      required: false,
+    },
+    items: {
+      type: Array<string>,
+      required: false,
+    },
+  },
+  setup(props, { emit }) {
+    const scopeExpanded = ref(false);
 
-  public scopeExpanded = false;
-  $refs!: {
-    select: HTMLDivElement;
-  };
+    const select: Ref<HTMLDivElement | null> = ref(null);
 
-  public toggleShow(): void {
-    this.scopeExpanded = !this.scopeExpanded;
-  }
-
-  public handleBlur(): void {
-    this.scopeExpanded = false;
-  }
-
-  public handleClick(event: Event, payload: { item: string; content: string }): void {
-    event.stopPropagation();
-    this.$emit('select-value', payload);
-    this.$refs.select.blur();
-  }
-
-  @Watch('scopeExpanded')
-  expandWatch(value: boolean): void {
-    if (value) {
-      this.$refs.select.focus();
-    } else {
-      this.$refs.select.blur();
+    function toggleShow() {
+      scopeExpanded.value = !scopeExpanded.value;
     }
-  }
-}
+
+    function handleBlur() {
+      scopeExpanded.value = false;
+    }
+
+    function handleClick(event: Event, payload: { item: string; content: string }) {
+      event.stopPropagation();
+      emit('select-value', payload);
+      select?.value?.blur();
+    }
+    watch(scopeExpanded, value => {
+      if (value) {
+        select?.value?.focus();
+      } else {
+        select?.value?.blur();
+      }
+    });
+    return {
+      scopeExpanded,
+      select,
+      handleClick,
+      handleBlur,
+      toggleShow,
+    };
+  },
+});
 </script>
 
 <style module lang="scss">
@@ -106,7 +119,7 @@ export default class DropDownSimple extends Vue {
 
 .input-arrow-down {
   position: absolute;
-  top: 55%;
+  top: 40%;
   right: 13px;
   cursor: pointer;
 }

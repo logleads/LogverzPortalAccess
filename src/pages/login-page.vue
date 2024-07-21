@@ -6,7 +6,7 @@
       <div v-if="isSelectTab === 'aws'" :class="$style['sign-in']">
         <TabAWS :disableLogin="disableLogin" />
       </div>
-      <template v-for="(item, key) in advertisement">
+      <template v-for="(item, key) in advertisement()">
         <Tab
           v-if="isSelectTab === key"
           :key="key"
@@ -20,97 +20,70 @@
         />
       </template>
     </div>
-    <notifications group="foo" />
+    <!-- <notifications group="foo" /> -->
   </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import { Component, Prop,Watch } from 'vue-property-decorator';
-
 import Header from '~/components/shared/header.vue';
 import config from '~/config.json';
 import SideBar from '~/pages/side-bar.vue';
 import Tab from '~/pages/tab.vue';
 import TabAWS from '~/pages/tab-aws.vue';
 import { AuthModule } from '~/store/modules/auth';
+import { defineComponent, ref } from 'vue';
 
-@Component({
+export default defineComponent({
   name: 'LoginPage',
   components: { Header, SideBar, Tab, TabAWS },
-})
-export default class LoginPage extends Vue {
-  @Prop({ required: true, type: Boolean }) readonly disableLogin!: boolean;
-  public isUserSelected = true;
-  public submitted = false;
-  public iconSelected = 'aws';
-  public accessKeyID = '';
-  public secretAccessKey = '';
-  public serialnumber = '';
-  public isSelectTab: string = 'aws';
+  props: {
+    disableLogin: {
+      type: Boolean,
+      required: true,
+    },
+  },
+  setup() {
+    const isUserSelected = ref(true);
+    const submitted = ref(false);
+    const iconSelected = ref('aws');
+    const accessKeyID = ref('');
+    const secretAccessKey = ref('');
+    const serialnumber = ref('');
+    const isSelectTab = ref('aws');
 
-  created(){
-    // eslint-disable-next-line no-console
-    // console.log("fisabled ", this.disableLogin)
-  }
+    function advertisement() {
+      return config.advertisement;
+    }
+    function isFetching() {
+      return AuthModule.isFetching;
+    }
 
-  get advertisement(): Record<string, any> {
-    return config.advertisement;
-  }
-  get isFetching(): boolean {
-    return AuthModule.isFetching;
-  }
+    function errorText() {
+      return AuthModule.errorText;
+    }
 
-  get errorText(): string {
-    return AuthModule.errorText;
-  }
-
-  get advertisementAWS(): string {
-    return config.AdvertisementAWS;
-  }
-
-  @Watch('disableLogin')
-  handleloginDisable(): void{
-    // eslint-disable-next-line no-console
-    console.log("fisabled ", this.disableLogin)
-  }
-
-  @Watch('errorText')
-  handleError(value: string): void {
-    this.$notify({
-      // (optional)
-      // Name of the notification holder
-      group: 'foo',
-
-      // (optional)
-      // Class that will be assigned to the notification
-      type: 'error',
-
-      // (optional)
-      // Title (will be wrapped in div.notification-title)
-      title: 'Error',
-
-      // Content (will be wrapped in div.notification-content)
-      text: `<b> ${value} </b>`,
-
-      // (optional)
-      // Overrides default/provided duration
-      duration: 10000,
-
-      // (optional)
-      // Overrides default/provided animation speed
-      speed: 1000,
-
-      // (optional)
-      // Data object that can be used in your template
-      data: {},
-    });
-  }
-
-  public selectAdvertisement(e: string): void {
-    this.isSelectTab = e;
-  }
-}
+    function advertisementAWS() {
+      return config.AdvertisementAWS;
+    }
+    function selectAdvertisement(e: string) {
+      isSelectTab.value = e;
+    }
+    return {
+      isSelectTab,
+      selectAdvertisement,
+      errorText,
+      advertisement,
+      isFetching,
+      advertisementAWS,
+      serialnumber,
+      isUserSelected,
+      submitted,
+      iconSelected,
+      accessKeyID,
+      secretAccessKey,
+    };
+  },
+});
 </script>
 
 <style module lang="scss">

@@ -38,60 +38,76 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import { Component, Prop, Watch } from 'vue-property-decorator';
-
 import Icon from '~/components/shared/icon.vue';
 
-@Component({
+import { defineComponent, watch, Ref, ref } from 'vue';
+
+export default defineComponent({
   name: 'DropDownInput',
   components: { Icon },
-})
-export default class DropDownInput extends Vue {
-  @Prop({ required: false, type: Array }) readonly items!: Array<string>;
-  @Prop({ required: false, type: Boolean }) readonly direction!: boolean;
-  @Prop({ required: false, type: String }) readonly selectedField!: string;
-  @Prop({ required: false, type: Array }) readonly names!: Array<string>;
+  props: {
+    items: {
+      type: Array<string>,
+      required: true,
+    },
+    direction: {
+      type: Boolean,
+      required: false,
+    },
+    selectedField: {
+      type: String,
+      required: false,
+    },
+    names: {
+      type: Array<string>,
+      required: false,
+    },
+  },
+  setup(props, { emit }) {
+    const scopeExpanded = ref(false);
 
-  public scopeExpanded = false;
+    const select: Ref<HTMLDivElement | null> = ref(null);
 
-  $refs!: {
-    select: HTMLDivElement;
-  };
-
-  get selectedValue(): string {
-    if (!this.names) {
-      return this.selectedField;
-    } else if (this.selectedField) {
-      return this.names[this.items.indexOf(this.selectedField)];
-    } else {
-      return '';
+    function selectedValue() {
+      if (!props.names) {
+        return props.selectedField;
+      } else if (props.selectedField) {
+        return props.names[props?.items?.indexOf(props.selectedField)];
+      } else {
+        return '';
+      }
     }
-  }
 
-  public toggleShow(): void {
-    this.scopeExpanded = !this.scopeExpanded;
-  }
-
-  public handleClick(event: Event, item: string): void {
-    event.stopPropagation();
-    this.$emit('select', item);
-    this.$refs.select.blur();
-  }
-
-  @Watch('scopeExpanded')
-  expandWatch(value: boolean): void {
-    if (value) {
-      this.$refs.select.focus();
-    } else {
-      this.$refs.select.blur();
+    function toggleShow(): void {
+      scopeExpanded.value = !scopeExpanded.value;
     }
-  }
 
-  public handleBlur(): void {
-    this.scopeExpanded = false;
-  }
-}
+    function handleClick(event: Event, item: string) {
+      event.stopPropagation();
+      emit('select', item);
+      select.value?.blur();
+    }
+    watch(scopeExpanded, (value: boolean) => {
+      if (value) {
+        select.value?.focus();
+      } else {
+        select.value?.blur();
+      }
+    });
+
+    function handleBlur(): void {
+      scopeExpanded.value = false;
+    }
+    return {
+      scopeExpanded,
+      select,
+      selectedValue,
+      toggleShow,
+      handleClick,
+      handleBlur,
+    };
+  },
+});
 </script>
 
 <style module lang="scss">

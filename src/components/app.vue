@@ -298,75 +298,80 @@
 <script lang="ts">
 import '~/assets/scss/main.scss';
 
-//import CookieLaw from 'vue-cookie-law'
-import Notifications from 'vue-notification';
-import { Component, Vue } from 'vue-property-decorator';
-import Vuelidate from 'vuelidate';
+import { defineComponent, ref } from 'vue';
+// import Notifications from 'vue-notification';
 
 import LoginPage from '~/pages/login-page.vue';
 
-Vue.use(Vuelidate);
-Vue.use(Notifications);
-
-@Component({
+// Vue.use(Notifications);
+export default defineComponent({
   name: 'App',
   components: { LoginPage }, //, CookieLaw
-})
-export default class App extends Vue {
-  public isOpen = false;
-  public isdisabled = true;
-  public isdisabledLogin = true;
-  created() {
-    if (!this.getVisited()) {
-      this.isOpen = true;
+  setup() {
+    const isOpen = ref(false);
+    const isdisabled = ref(true);
+    const isdisabledLogin = ref(true);
+    function getVisited() {
+      let visited: unknown = false;
+      visited = localStorage.getItem('acceptCookie');
+      if (typeof visited === 'string') {
+        visited = JSON.parse(visited);
+      }
+      return !(visited === null || visited === undefined);
     }
-  }
-  mounted() {
-    if (this.isAccepted()) {
-      this.isdisabled = false;
-      this.isdisabledLogin = false;
+    if (!getVisited()) {
+      isOpen.value = true;
     }
-  }
-  setVisited() {
-    localStorage.setItem('acceptCookie', 'true');
-  }
-  setAccepted() {
-    localStorage.setItem('acceptCookie', 'true');
-  }
-  getVisited(): boolean {
-    let visited: unknown = false;
-    visited = localStorage.getItem('acceptCookie');
-    if (typeof visited === 'string') {
-      visited = JSON.parse(visited);
+    if (isAccepted()) {
+      isdisabled.value = false;
+      isdisabledLogin.value = false;
     }
-    return !(visited === null || visited === undefined);
-  }
-  isAccepted() {
-    let accepted: unknown = false;
-    accepted = localStorage.getItem('acceptCookie');
+    function setVisited() {
+      localStorage.setItem('acceptCookie', 'true');
+    }
+    function setAccepted() {
+      localStorage.setItem('acceptCookie', 'true');
+    }
 
-    if (typeof accepted === 'string') {
-      accepted = JSON.parse(accepted);
+    function isAccepted() {
+      let accepted: unknown = false;
+      accepted = localStorage.getItem('acceptCookie');
+      if (typeof accepted === 'string') {
+        accepted = JSON.parse(accepted);
+      }
+      return accepted;
     }
-    return accepted;
-  }
-  accept() {
-    this.setVisited();
-    this.setAccepted();
-    this.isOpen = false;
-    this.isdisabledLogin = false;
-    // this.isdisabled= true
-  }
-  close() {
-    this.isOpen = false;
-    this.isdisabledLogin = false;
-    // this.isdisabled = true;
-  }
-  handleLearnMore() {
-    this.isdisabled = false;
-    window.open('https://docs.logverz.io/assets/docs/LogLeads_Privacy_Policy.pdf', '_blank');
-  }
-}
+    function accept() {
+      setVisited();
+      setAccepted();
+      isOpen.value = false;
+      isdisabledLogin.value = false;
+      // this.isdisabled= true
+    }
+    function close() {
+      isOpen.value = false;
+      isdisabledLogin.value = false;
+      // this.isdisabled = true;
+    }
+    function handleLearnMore() {
+      isdisabled.value = false;
+      window.open('https://docs.logverz.io/assets/docs/LogLeads_Privacy_Policy.pdf', '_blank');
+    }
+
+    return {
+      isOpen,
+      isdisabled,
+      isdisabledLogin,
+      isAccepted,
+      handleLearnMore,
+      close,
+      accept,
+      getVisited,
+      setVisited,
+      setAccepted,
+    };
+  },
+});
 </script>
 
 <style module lang="scss">

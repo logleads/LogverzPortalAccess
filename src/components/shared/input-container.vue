@@ -11,12 +11,12 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropType } from 'vue';
+import { defineComponent } from 'vue';
 
-export default Vue.extend({
+export default defineComponent({
   name: 'InputContainer',
   props: {
-    label: String as PropType<string>,
+    label: String,
   },
 });
 </script>

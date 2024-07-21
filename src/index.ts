@@ -1,5 +1,8 @@
-import Vue from 'vue';
+import { createApp } from 'vue';
 
 import App from '~/components/app.vue';
-
-new Vue(App).$mount('#root');
+import { store } from './store';
+const app = createApp(App);
+app.use(store);
+app.mount('#root');
+// console.log('PORTAL ACCESS VUE VERSION: ', app.version);

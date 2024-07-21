@@ -92,3 +92,6 @@ sw.*
 /build
 .env
 src/config.json
+.VSCodeCounter
+.vscode/settings.json
+.vscode/settings.json

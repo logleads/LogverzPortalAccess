@@ -6,7 +6,7 @@
         <div :class="$style['google-body']">
           <p>{{ title }}</p>
           <button :class="$style['google-btn']" @click="openGoogleAuthLink">
-            <p v-html="loginButtonIcon">></p>
+            <p v-html="loginButtonIcon"></p>
             <span>{{ btnText }}</span>
           </button>
           <span :class="$style['google-body_text']">{{ bodyText }}</span>
@@ -20,73 +20,98 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import { Component, Prop } from 'vue-property-decorator';
+import { defineComponent, onMounted } from 'vue';
 
-@Component({
+export default defineComponent({
   name: 'Tab',
-})
-export default class Tab extends Vue {
-  @Prop({ required: true, type: String }) readonly title!: string;
-  @Prop({ required: true, type: String }) readonly btnText!: string;
-  @Prop({ required: true, type: String }) readonly bodyText!: string;
-  @Prop({ required: true, type: String }) readonly advertisementHTML!: string;
-  @Prop({ required: true, type: String }) readonly loginButtonIcon!: string;
-  @Prop({ required: true, type: String }) readonly url!: string;
-  @Prop({ required: true, type: String }) readonly advertisementId!: string;
+  props: {
+    title: {
+      type: String,
+      required: true,
+    },
+    btnText: {
+      type: String,
+      required: true,
+    },
+    bodyText: {
+      type: String,
+      required: true,
+    },
+    advertisementHTML: {
+      type: String,
+      required: true,
+    },
+    loginButtonIcon: {
+      type: String,
+      required: true,
+    },
+    url: {
+      type: String,
+      required: true,
+    },
+    advertisementId: {
+      type: String,
+      required: true,
+    },
+  },
 
-  mounted(): void {
-    let a: any = window,
-      g;
-    let l: any = {
-      zones: [],
-      prefix:
-        a.reviveAsync[this.advertisementId].name +
-        '-' +
-        a.reviveAsync[this.advertisementId].id +
-        '-',
-    };
-    const q = new RegExp('^' + a.reviveAsync[this.advertisementId].getDataAttr('(.*)') + '$');
-    let e = document.querySelectorAll(
-      'ins[' +
-        a.reviveAsync[this.advertisementId].getDataAttr('id') +
-        "='" +
-        this.advertisementId +
-        "']",
-    );
+  setup(props) {
+    onMounted(() => {
+      let a: any = window,
+        g;
+      let l: any = {
+        zones: [],
+        prefix:
+          a.reviveAsync[props.advertisementId].name +
+          '-' +
+          a.reviveAsync[props.advertisementId].id +
+          '-',
+      };
+      const q = new RegExp('^' + a.reviveAsync[props.advertisementId].getDataAttr('(.*)') + '$');
+      let e = document.querySelectorAll(
+        'ins[' +
+          a.reviveAsync[props.advertisementId].getDataAttr('id') +
+          "='" +
+          props.advertisementId +
+          "']",
+      );
 
-    const n = e[0];
-    n.setAttribute(a.reviveAsync[this.advertisementId].getDataAttr('loaded'), '0');
+      const n = e[0];
+      n.setAttribute(a.reviveAsync[props.advertisementId].getDataAttr('loaded'), '0');
 
-    let s;
-    let k: any = a.reviveAsync[this.advertisementId].getDataAttr('seq');
+      let s;
+      let k: any = a.reviveAsync[props.advertisementId].getDataAttr('seq');
 
-    if (n.hasAttribute(k)) {
-      s = n.getAttribute(k);
-    } else {
-      s = a.reviveAsync[this.advertisementId].seq++;
-      n.setAttribute(k, s as any);
-      n.id = l.prefix + s;
-    }
-    for (var h = 0; h < n.attributes.length; h++) {
-      if ((g = n.attributes[h].name.match(q))) {
-        if ('zoneid' === g[1]) {
-          l.zones[s as any] = n.attributes[h].value;
-        } else {
-          if (!/^(id|seq|loaded)$/.test(g[1])) {
-            l[g[1] as any] = n.attributes[h].value;
+      if (n.hasAttribute(k)) {
+        s = n.getAttribute(k);
+      } else {
+        s = a.reviveAsync[props.advertisementId].seq++;
+        n.setAttribute(k, s as any);
+        n.id = l.prefix + s;
+      }
+      for (var h = 0; h < n.attributes.length; h++) {
+        if ((g = n.attributes[h].name.match(q))) {
+          if ('zoneid' === g[1]) {
+            l.zones[s as any] = n.attributes[h].value;
+          } else {
+            if (!/^(id|seq|loaded)$/.test(g[1])) {
+              l[g[1] as any] = n.attributes[h].value;
+            }
           }
         }
       }
+
+      a.reviveAsync[props.advertisementId].apply(l);
+    });
+
+    function openGoogleAuthLink(): void {
+      window.open(props.url, '_blank');
     }
-
-    a.reviveAsync[this.advertisementId].apply(l);
-  }
-
-  public openGoogleAuthLink(): void {
-    window.open(this.url, '_blank');
-  }
-}
+    return {
+      openGoogleAuthLink,
+    };
+  },
+});
 </script>
 
 <style module lang="scss">

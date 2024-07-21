@@ -3,9 +3,11 @@
 </template>
 
 <script>
-export default {
+import { defineComponent } from 'vue';
+
+export default defineComponent({
   name: 'Loader',
-};
+});
 </script>
 
 <style module lang="scss">

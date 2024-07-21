@@ -6,31 +6,36 @@
     <input
       :type="type"
       :class="[$style['input'], { [$style['input__error']]: error }]"
-      :value="value"
+      :value="modelValue"
       :name="name"
       :disabled="disabled"
-      @input="$emit('input', $event.target.value)"
+      @input="handleInput"
     />
   </div>
 </template>
 
 <script lang="ts">
-import Vue, { PropType } from 'vue';
-
 import Icon from './icon.vue';
+import { defineComponent } from 'vue';
 
-export default Vue.extend({
+export default defineComponent({
   name: 'Input',
   components: { Icon },
   props: {
-    value: String as PropType<string>,
+    modelValue: String,
     type: {
-      type: String as PropType<'text' | 'password'>,
+      type: String,
       default: 'text',
     },
-    name: String as PropType<string>,
-    error: Boolean as PropType<boolean>,
-    disabled: Boolean as PropType<boolean>,
+    name: String,
+    error: Boolean,
+    disabled: Boolean,
+  },
+  setup(prop, { emit }) {
+    function handleInput(e) {
+      emit('update:modelValue', e.target.value);
+    }
+    return { handleInput };
   },
 });
 </script>

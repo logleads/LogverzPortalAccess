@@ -1,12 +1,12 @@
-const webpack = require('webpack');
+const Webpack = require('webpack');
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const VueLoaderPlugin = require('vue-loader/lib/plugin');
-const CopyPlugin = require("copy-webpack-plugin");
+// const VueLoaderPlugin = require('vue-loader/lib/plugin');
+const { VueLoaderPlugin } = require('vue-loader');
+const CopyPlugin = require('copy-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
-const ESLintPlugin = require('eslint-webpack-plugin');
 
 const myEslintOptions = {
   extensions: [`js`, `jsx`, `ts`], //vue
@@ -86,7 +86,7 @@ module.exports = {
         type: 'asset/resource',
         generator: {
           filename: 'images/[hash][ext]',
-        }
+        },
       },
       {
         test: /\.(woff(2)?|eot|ttf|otf|svg|)$/,
@@ -99,11 +99,11 @@ module.exports = {
       filename: 'css/styles.css',
     }),
     new CleanWebpackPlugin(),
-    // new webpack.DefinePlugin({
-    //   'process.env': {
-    //     NODE_ENV: "'development'",
-    //   },
-    // }),
+    new Webpack.DefinePlugin({
+      __VUE_OPTIONS_API: 'true',
+      __VUE_PROD_DEVTOOLS__: 'false',
+      __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: 'false',
+    }),
     new HtmlWebpackPlugin({
       title: 'LogLeads',
       //favicon: "./assets/images/favicon.ico",
@@ -113,11 +113,11 @@ module.exports = {
     }),
     new CopyPlugin({
       patterns: [
-        { from: "./assets/images/favicon.ico", to: "images/favicon.ico" },
-        { from: "./assets/images/Okta.png", to: "images/Okta.png" },
-        { from: "./assets/images/Google.png", to: "images/Google.png" },
-        { from: "./assets/images/Aws.png", to: "images/Aws.png" },
-        { from: "./assets/images/background.png", to: "images/background.png" }
+        { from: './assets/images/favicon.ico', to: 'images/favicon.ico' },
+        { from: './assets/images/Okta.png', to: 'images/Okta.png' },
+        { from: './assets/images/Google.png', to: 'images/Google.png' },
+        { from: './assets/images/Aws.png', to: 'images/Aws.png' },
+        { from: './assets/images/background.png', to: 'images/background.png' },
       ],
     }),
     new VueLoaderPlugin(),

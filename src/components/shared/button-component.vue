@@ -16,20 +16,19 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropType } from 'vue';
-
 import Loader from '~/components/shared/loader.vue';
+import { defineComponent } from 'vue';
 
-export default Vue.extend({
+export default defineComponent({
   name: 'ButtonComponent',
   components: { Loader },
   props: {
-    text: String as PropType<string>,
-    className: String as PropType<string>,
+    text: String,
+    className: String,
     callback: Function,
-    disabled: Boolean as PropType<boolean>,
-    displayLoader: Boolean as PropType<boolean>,
-    cookiedisabled: Boolean as PropType<boolean>,
+    disabled: Boolean,
+    displayLoader: Boolean,
+    cookiedisabled: Boolean,
   },
 });
 </script>
