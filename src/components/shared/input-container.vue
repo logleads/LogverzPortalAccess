@@ -29,9 +29,11 @@ export default defineComponent({
   &__label {
     display: flex;
     align-items: center;
-    font-size: 12px;
     margin-bottom: 9px;
-    color: var(--secondary-text-color);
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 5px;
+    color: var(--ink-color);
     &__icon {
       margin-left: 5px;
     }

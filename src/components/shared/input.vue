@@ -63,11 +63,13 @@ $iconSize: 16px;
   border: 1px solid var(--border-color);
   cursor: pointer;
   border-radius: 5px;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 14px;
   padding: 0 $inputPadding;
   width: 100%;
   height: 44px;
+  font-family: 'Roboto', sans-serif !important;
+  font-weight: 400;
+  font-style: normal;
   transition: background 0.1s linear;
   &__error {
     border: 1px solid red;

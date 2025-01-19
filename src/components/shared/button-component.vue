@@ -45,6 +45,7 @@ export default defineComponent({
   justify-content: center;
   transition: background-color 0.1s linear;
   cursor: pointer;
+  padding: 15px 24px;
 }
 .custom {
   background-color: gray;
